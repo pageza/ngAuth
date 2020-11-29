@@ -11,14 +11,18 @@ import { PostsService } from '../posts.service';
 })
 export class PostListComponent implements OnInit, OnDestroy {
   posts: Post[] = [];
+  isLoading = false;
+
   private postsSub: Subscription;
 
   // tslint:disable-next-line:variable-name
   constructor(public _posts: PostsService) { }
 
   ngOnInit(): void {
+    this.isLoading = true;
     this._posts.getPosts();
     this.postsSub = this._posts.getPostUpdateListener().subscribe((posts: Post[]) => {
+      this.isLoading = false;
       this.posts = posts;
     });
   }
