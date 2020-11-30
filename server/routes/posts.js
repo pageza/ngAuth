@@ -62,10 +62,8 @@ router.put('/:id',
     content: req.body.content,
     imagePath: imagePath
   });
-    console.log(post)
   Post.updateOne({_id: req.params.id}, post )
-    .then( result => {
-      console.log(result);
+    .then( () => {
       res.status(200).json({
         message: 'Updated Successfully'
       })
@@ -73,12 +71,25 @@ router.put('/:id',
 })
 
 router.get('',(req,res) => {
-  Post.find()
-    .then(posts => {
+  const pageSize = +req.query.pagesize;
+  const currentPage = +req.query.page;
+  const postQuery = Post.find();
+  let fetchedPosts;
+  if (pageSize && currentPage) {
+    postQuery
+      .skip(pageSize * (currentPage - 1))
+      .limit(pageSize);
+  }
+  postQuery.then(documents => {
+    fetchedPosts = documents;
+    return Post.count();
+    })
+    .then(count => {
       res.status(200).json({
-        message: 'Posts fetched successfully',
-        posts: posts
-      });
+        message: 'Posts fetched successfully.',
+        posts: fetchedPosts,
+        maxPosts: count
+      })
     })
     .catch(err => {
       res.status(500).json({

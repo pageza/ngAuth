@@ -1,5 +1,6 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import { Subscription } from 'rxjs';
+import { PageEvent } from '@angular/material/paginator';
 
 import { Post } from '../post.model';
 import { PostsService } from '../posts.service';
@@ -12,18 +13,22 @@ import { PostsService } from '../posts.service';
 export class PostListComponent implements OnInit, OnDestroy {
   posts: Post[] = [];
   isLoading = false;
-
+  totalPosts = 0;
+  postsPerPage = 2;
+  currentPage = 1;
+  pageSizeOptions = [1, 2, 5, 10];
   private postsSub: Subscription;
 
   // tslint:disable-next-line:variable-name
-  constructor(public _posts: PostsService) { }
+  constructor(public postService: PostsService) { }
 
   ngOnInit(): void {
     this.isLoading = true;
-    this._posts.getPosts();
-    this.postsSub = this._posts.getPostUpdateListener().subscribe((posts: Post[]) => {
+    this.postService.getPosts(this.postsPerPage, this.currentPage);
+    this.postsSub = this.postService.getPostUpdateListener().subscribe((postData: { posts: Post[], postCount: number }) => {
       this.isLoading = false;
-      this.posts = posts;
+      this.totalPosts = postData.postCount;
+      this.posts = postData.posts;
     });
   }
   ngOnDestroy(): void {
@@ -32,6 +37,16 @@ export class PostListComponent implements OnInit, OnDestroy {
 
   // tslint:disable-next-line:typedef
   onDelete(postID: string) {
-    this._posts.deletePost(postID);
+    this.postService.deletePost(postID).subscribe(() => {
+      this.postService.getPosts(this.postsPerPage, this.currentPage);
+    });
+  }
+
+  // tslint:disable-next-line:typedef
+  onChangePage(pageData: PageEvent) {
+    this.isLoading = true;
+    this.currentPage = pageData.pageIndex + 1;
+    this.postsPerPage = pageData.pageSize;
+    this.postService.getPosts(this.postsPerPage, this.currentPage);
   }
 }
