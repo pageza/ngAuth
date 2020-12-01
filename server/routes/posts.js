@@ -115,8 +115,7 @@ router.get('/:id', (req,res) => {
 
 router.delete('/:id', (req,res) => {
   Post.findByIdAndDelete({_id: req.params.id})
-    .then(result => {
-      console.log(result)
+    .then(() => {
       res.status(200).json({
         message: 'Post deleted'
       })
