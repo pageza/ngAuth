@@ -16,6 +16,7 @@ export class SignupComponent implements OnInit {
   }
 
   onSignUp(form: NgForm): void {
+    this.isLoading = true;
     if (form.invalid) {
       return;
     }
