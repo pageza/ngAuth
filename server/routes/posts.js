@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 
 const Post = require('../models/post');
+const authCheck = require('../middleware/authCheck')
 
 const router = express.Router();
 
@@ -28,6 +29,7 @@ const storage = multer.diskStorage({
 })
 
 router.post('',
+  authCheck,
   multer({storage: storage}).single('image'),
   (req,res) => {
   const url = req.protocol + '://' + req.get('host');
@@ -49,6 +51,7 @@ router.post('',
 })
 
 router.put('/:id',
+  authCheck,
   multer({storage: storage}).single('image'),
   (req,res) => {
   let imagePath = req.body.imagePath;
@@ -113,7 +116,9 @@ router.get('/:id', (req,res) => {
     })
 })
 
-router.delete('/:id', (req,res) => {
+router.delete('/:id',
+  authCheck,
+  (req,res) => {
   Post.findByIdAndDelete({_id: req.params.id})
     .then(() => {
       res.status(200).json({
