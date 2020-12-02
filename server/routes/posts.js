@@ -36,7 +36,8 @@ router.post('',
   const post = new Post({
     title: req.body.title,
     content: req.body.content,
-    imagePath: url + '/images/' + req.file.filename
+    imagePath: url + '/images/' + req.file.filename,
+    creator: req.userData.userID
   });
   post.save().then(createdPost => {
     res.status(201).json({
@@ -50,28 +51,6 @@ router.post('',
 
 })
 
-router.put('/:id',
-  authCheck,
-  multer({storage: storage}).single('image'),
-  (req,res) => {
-  let imagePath = req.body.imagePath;
-    if (req.file) {
-      const url = req.protocol + '://' + req.get('host');
-      imagePath = url + '/images/' + req.file.filename
-    }
-  const post = new Post({
-    _id: req.body.id,
-    title: req.body.title,
-    content: req.body.content,
-    imagePath: imagePath
-  });
-  Post.updateOne({_id: req.params.id}, post )
-    .then( () => {
-      res.status(200).json({
-        message: 'Updated Successfully'
-      })
-    })
-})
 
 router.get('',(req,res) => {
   const pageSize = +req.query.pagesize;
@@ -85,7 +64,7 @@ router.get('',(req,res) => {
   }
   postQuery.then(documents => {
     fetchedPosts = documents;
-    return Post.count();
+    return Post.countDocuments();
     })
     .then(count => {
       res.status(200).json({
@@ -116,14 +95,51 @@ router.get('/:id', (req,res) => {
     })
 })
 
+router.put('/:id',
+  authCheck,
+  multer({storage: storage}).single('image'),
+  (req,res) => {
+    let imagePath = req.body.imagePath;
+    if (req.file) {
+      const url = req.protocol + '://' + req.get('host');
+      imagePath = url + '/images/' + req.file.filename
+    }
+    const post = new Post({
+      _id: req.body.id,
+      title: req.body.title,
+      content: req.body.content,
+      imagePath: imagePath,
+      creator: req.userData.userID
+    });
+    Post.updateOne({_id: req.params.id, creator: req.userData.userID}, post )
+      .then( result => {
+        console.log(result)
+        if (result.nModified > 0 ) {
+          res.status(200).json({
+            message: 'Updated Successfully'
+          })
+        } else {
+          res.status(401).json({
+            message: 'Not Authorized'
+          })
+        }
+      })
+  })
+
 router.delete('/:id',
   authCheck,
   (req,res) => {
-  Post.findByIdAndDelete({_id: req.params.id})
-    .then(() => {
-      res.status(200).json({
-        message: 'Post deleted'
-      })
+  Post.deleteOne({_id: req.params.id, creator: req.userData.userID})
+    .then(result => {
+      if (result.n > 0 ) {
+        res.status(200).json({
+          message: 'Deleted Successfully'
+        })
+      } else {
+        res.status(401).json({
+          message: 'Not Authorized'
+        })
+      }
     })
     .catch()
 
