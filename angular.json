@@ -122,5 +122,8 @@
       }
     }
   },
-  "defaultProject": "ngAuth"
+  "defaultProject": "ngAuth",
+  "cli": {
+    "analytics": "be2c8cff-11f7-4cf5-ae8e-36e6bea87d2b"
+  }
 }

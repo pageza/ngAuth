@@ -74,6 +74,7 @@ router.get('',(req,res) => {
       })
     })
     .catch(err => {
+      console.log(err)
       res.status(500).json({
         message: 'Something went wrong fetching posts',
         error: err
