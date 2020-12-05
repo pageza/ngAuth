@@ -48,6 +48,11 @@ router.post('',
       }
     });
   })
+    .catch( () => {
+      res.status(500).json({
+        message: 'Creating a post failed'
+      })
+    })
 
 })
 
@@ -73,11 +78,9 @@ router.get('',(req,res) => {
         maxPosts: count
       })
     })
-    .catch(err => {
-      console.log(err)
+    .catch(() => {
       res.status(500).json({
         message: 'Something went wrong fetching posts',
-        error: err
       })
     })
 
@@ -93,6 +96,11 @@ router.get('/:id', (req,res) => {
           message: 'Post not found'
         });
       }
+    })
+    .catch(() => {
+      res.status(500).json({
+        message: 'Something went wrong fetching post',
+      })
     })
 })
 
@@ -125,6 +133,11 @@ router.put('/:id',
           })
         }
       })
+      .catch( () => {
+        res.status(500).json({
+          message: 'Could not update post'
+        })
+      })
   })
 
 router.delete('/:id',
@@ -142,7 +155,11 @@ router.delete('/:id',
         })
       }
     })
-    .catch()
+    .catch(() => {
+      res.status(500).json({
+        message: 'Something went wrong deleting post',
+      })
+    })
 
 })
 

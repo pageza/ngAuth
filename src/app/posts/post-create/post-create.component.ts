@@ -1,10 +1,12 @@
-import { Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 
 import { PostsService } from '../posts.service';
 import { Post } from '../post.model';
 import { mimeType } from './mime-type.validator';
+import {Subscription} from 'rxjs';
+import {AuthService} from '../../auth/auth.service';
 
 // @ts-ignore
 @Component({
@@ -12,9 +14,10 @@ import { mimeType } from './mime-type.validator';
   templateUrl: './post-create.component.html',
   styleUrls: ['./post-create.component.css']
 })
-export class PostCreateComponent implements OnInit{
+export class PostCreateComponent implements OnInit, OnDestroy{
   private mode = 'create';
   private postID: string;
+  private authStatusSub: Subscription;
   post: Post;
   isLoading = false;
   imagePreview: string;
@@ -23,10 +26,16 @@ export class PostCreateComponent implements OnInit{
   constructor(
     public postsService: PostsService,
     public route: ActivatedRoute,
+    private authService: AuthService
   ) {}
 
   // tslint:disable-next-line:typedef
   ngOnInit() {
+    this.authStatusSub = this.authService.getAuthStatusListener().subscribe(
+      () => {
+        this.isLoading = false;
+      }
+    );
     this.form = new FormGroup({
       title: new FormControl(null,
         {validators: [Validators.required, Validators.minLength(3)]
@@ -38,7 +47,6 @@ export class PostCreateComponent implements OnInit{
         asyncValidators: [mimeType]
       })
     });
-// TODO: need to verify I am get the userID so that shit works right
     this.route.paramMap.subscribe((paramMap: ParamMap) => {
       if (paramMap.has('postID')) {
         this.mode = 'edit';
@@ -98,5 +106,9 @@ export class PostCreateComponent implements OnInit{
       this.imagePreview = reader.result as string;
     };
     reader.readAsDataURL(file);
+  }
+
+  ngOnDestroy(): void {
+    this.authStatusSub.unsubscribe();
   }
 }

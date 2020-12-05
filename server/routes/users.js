@@ -20,9 +20,9 @@ router.post('/signup', (req,res) => {
             result: result
           });
         })
-        .catch(err => {
+        .catch(() => {
           res.status(500).json({
-            error: err
+              message: 'Invalid authentication credentials'
           });
         });
     });
@@ -57,10 +57,9 @@ router.post('/login', (req,res) => {
         userID: fetchedUser._id
       })
     })
-    .catch( err => {
+    .catch( () => {
       return res.status(401 ).json({
-        message: 'Not an authorized user',
-        error: err
+        message: 'Invalid email and password combination',
       })
     })
 });
