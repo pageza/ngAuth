@@ -11,7 +11,7 @@ const usersRoutes = require('./routes/users')
 const app = express();
 
 //Setting the database connection info
-mongoose.connect('mongodb://localhost/ngAuth',
+mongoose.connect('mongodb+srv://admin:' + process.env.MONGO_PASS + '@cluster0.uvb3p.mongodb.net/ngAuth?retryWrites=true&w=majority',
   {
     useNewUrlParser: true,
     useCreateIndex: true,
@@ -21,15 +21,16 @@ mongoose.connect('mongodb://localhost/ngAuth',
   .then(() => {
     console.log('Connected to database')
   })
-  .catch(() => {
-    console.log('Connection failed')
+  .catch((err) => {
+    console.log(process.env.MONGO_PASS ,err,' Connection failed')
   })
 
 //Set the app to use body-parser to access the request body
 app.use(bodyParser.json())
 
 //Configuring express to allow access to the 'images' folder on the server to store uploaded images
-app.use('/images', express.static(path.join('server/images')))
+app.use('/images', express.static(path.join(__dirname,'images')))
+app.use('/', express.static(path.join(__dirname,'ngAuth')))
 
 //Setting the request Headers to allow Front-end Server to talk to API Server
 app.use((req,res,next) => {
@@ -48,5 +49,8 @@ app.use((req,res,next) => {
 //sending the app to respective routes
 app.use('/api/posts', postsRoutes)
 app.use('/api/users', usersRoutes)
+app.use((req,res) => {
+  res.sendFile(path.join(__dirname, 'ngAuth', 'index.html'))
+})
 
 module.exports = app;

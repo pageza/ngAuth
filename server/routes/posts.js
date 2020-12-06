@@ -19,7 +19,7 @@ const storage = multer.diskStorage({
     if (isValid) {
       error = null;
     }
-    cb(error, 'server/images');
+    cb(error, 'images');
   },
   filename: (req, file, cb) => {
     const name = file.originalname.toLowerCase().split(' ').join('-');
@@ -122,7 +122,6 @@ router.put('/:id',
     });
     Post.updateOne({_id: req.params.id, creator: req.userData.userID}, post )
       .then( result => {
-        console.log(result)
         if (result.nModified > 0 ) {
           res.status(200).json({
             message: 'Updated Successfully'
